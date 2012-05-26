@@ -1,0 +1,132 @@
+<!-- simulator/index -->
+<?php if (isset($this->messages) && count($this->smessages) > 0): ?>
+<?php foreach ($this->messages as $message): ?>
+<div class="row alert-box error">
+    <?php echo $message ?>
+    <a href="" class="close">&times;</a>
+</div>
+<?php endforeach; ?>
+<?php endif; ?>
+
+<form method="post" id="form" action="<?php echo $this->url(array('action' => 'index')) ?>" class="custom nice">
+    <div class="row">
+        <div class="four columns">
+            <h4>Basic</h4><hr />
+            <label for="vendor">Vendor
+                <select name="vendor" id="vendor" class="expand">
+                    <option<?php echo (isset($this->params['vendor']) && $this->params['vendor'] == 'BML') ? ' selected' : null ?>>BML</option>
+                    <option<?php echo (isset($this->params['vendor']) && $this->params['vendor'] == 'Xeon') ? ' selected' : null ?>>Xeon</option>
+                </select>
+            </label>
+
+            <label for="vendor">Method
+                <select name="method" id="method" class="expand">
+                    <option<?php echo (isset($this->params['method']) && $this->params['method'] == 'Redirect') ? ' selected' : null ?>>Redirect</option>
+                    <option<?php echo (isset($this->params['method']) && $this->params['method'] == 'Direct') ? ' selected' : null ?>>Direct</option>
+                </select>
+            </label>
+
+            <label for="password" id="fldPassword">Transaction Password
+                <input type="text" name="password" id="password" value="<?php echo isset($this->params['password']) ? $this->params['password'] : null ?>" class="input-text expand" />
+                <?php echo isset($this->errors['password']) ? $this->partial('index/error.phtml', array('message' => $this->errors['password'])) : null ?>
+            </label>
+
+            <label for="merId">Merchant Id
+                <input type="text" name="merId" id="merId" value="<?php echo isset($this->params['merId']) ? $this->params['merId'] : null ?>" class="input-text expand" />
+                <?php echo isset($this->errors['merId']) ? $this->partial('index/error.phtml', array('message' => $this->errors['merId'])) : null ?>
+            </label>
+
+            <label for="amount">Amount
+                <input type="text" name="amount" id="amount" value="<?php echo isset($this->params['amount']) ? $this->params['amount'] : null ?>" class="input-text expand" />
+                <?php echo isset($this->errors['amount']) ? $this->partial('index/error.phtml', array('message' => $this->errors['amount'])) : null ?>
+            </label>
+
+            <label for="currency">Currency
+                <select name="currency" id="currency" class="expand">
+                    <option selected>MVR</option>
+                    <option>USD</option>
+                </select>
+            </label>
+
+            <label for="orderId">Order Id
+                <input type="text" name="orderId" id="orderId" value="<?php echo isset($this->params['orderId']) ? $this->params['orderId'] : null ?>" class="input-text expand" />
+                <?php echo isset($this->errors['orderId']) ? $this->partial('index/error.phtml', array('message' => $this->errors['orderId'])) : null ?>
+            </label>
+        </div>
+
+        <div id="directOptions" class="four columns end">
+            <h4>Direct Method Options</h4><hr />
+            <label for="cardNumber">Card Number
+                <input type="text" name="cardNumber" id="cardNumber" maxlength="19" class="input-text expand" />
+            </label>
+
+            <label for="cardExpiry">Card Expiry (MMYY)
+                <input type="text" name="cardExpiry" id="cardExpiry" maxlength="4" class="input-text expand" />
+            </label>
+
+            <label for="cardCvv2">Card CVV2
+                <input type="text" name="cardCvv2" id="cardCvv2" maxlength="4" class="input-text expand" />
+            </label>
+        </div>
+
+        <div class="four columns end">
+            <h4>Some Instructions</h4><hr />
+            <div>
+                Some instructions on the basic options and using the web
+                interface to validate transaction input.
+            </div>
+            <hr />
+            <input type="submit" name="action" value="Process" class="button small nice radius" />
+        </div>
+    </div>
+</form>
+
+<script type="text/javascript">
+$(function() {
+    function getFormFields() {
+        return {
+            vendor: $('#vendor')[0],
+            password: $('#password')[0],
+            merId: $('#merId')[0],
+            purchaseAmount: $('#purchaseAmount')[0],
+            purchaseCurrency: $('#purchaseCurrency')[0],
+            orderId: $('#orderId')[0],
+            signature: $('#signature')[0]
+        };
+    }
+
+    function getFormValues() {
+        var fields = getFormFields();
+        var values = {};
+        $.each(fields, function(index, item) {
+            values[index] = item.value;
+        });
+        return values;
+    }
+
+    $('#vendor').on('change', function(e) {
+        var params = getFormFields();
+        if (e.target.value === 'Xeon') {
+            $('#fldPassword').hide('fast');
+        } else {
+            $('#fldPassword').show('fast');
+        }
+    });
+
+    /* Initialize display of direct method options column. */
+    if ($('#method')[0].value == 'Redirect') {
+        $('#directOptions').hide();
+    } else {
+        $('#directOptions').show();
+    }
+
+    /* Change listener for method field. */
+    $('#method').on('change', function(e) {
+        if (e.target.value == 'Redirect') {
+            $('#directOptions').hide('fast');
+        } else {
+            $('#directOptions').show('fast');
+        }
+    });
+});
+</script>

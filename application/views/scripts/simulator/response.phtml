@@ -1,0 +1,23 @@
+<!-- simulator/response -->
+<?php echo $this->partial('simulator/index.phtml', array('params' => $this->initialParams)) ?>
+
+<div class="row">
+    <hr />
+    <h4>Transaction Response</h4><hr />
+    <div>
+        <table>
+            <thead>
+                <tr>
+                    <th>Field</th>
+                    <th>Value</th>
+                </tr>
+            </thead>
+            <?php foreach ($this->responseParams as $key => $value): ?>
+            <tr>
+                <td><?php echo $key ?></td>
+                <td><?php echo $value ?></td>
+            </tr>
+            <?php endforeach; ?>
+        </table>
+    </div>
+</div>

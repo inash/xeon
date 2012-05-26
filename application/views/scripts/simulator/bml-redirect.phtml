@@ -1,0 +1,25 @@
+<!-- simulator/bml-redirection.phtml -->
+<div class="row">
+    <h4>Redirecting</h4>
+    <hr />
+    <div class="alert-box">Redirecting You to Maldives Payment Gateway...</div>
+    <form method="post" id="form" action="https://testgateway.bankofmaldives.com.mv/SENTRY/PaymentGateway/Application/RedirectLink.aspx">
+        <input type="hidden" name="Version" value="1.0.0" />
+        <input type="hidden" name="MerID" value="<?php echo $this->params['merId'] ?>" />
+        <input type="hidden" name="AcqID" value="407387" />
+        <input type="hidden" name="MerRespURL" value="<?php echo $this->params['merRespUrl'] ?>" />
+        <input type="hidden" name="PurchaseAmt" value="<?php echo $this->params['purchaseAmount'] ?>" />
+        <input type="hidden" name="PurchaseCurrency" value="<?php echo $this->params['purchaseCurrency'] ?>" />
+        <input type="hidden" name="PurchaseCurrencyExponent" value="2" />
+        <input type="hidden" name="OrderID" value="<?php echo $this->params['orderId'] ?>" />
+        <input type="hidden" name="Signature" value="<?php echo $this->params['signature'] ?>" />
+    </form>
+</div>
+
+<script type="text/javascript">
+$(function() {
+    var to = setTimeout(function() {
+        $('#form').submit();
+    }, 1000);
+});
+</script>
