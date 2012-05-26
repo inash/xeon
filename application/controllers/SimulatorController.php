@@ -20,8 +20,8 @@ class SimulatorController extends Pub_Controller_Action
         if (isset($params['password']) && $params['password'] == '')
             $errors['password'] = 'Password is required.';
 
-        if ($params['merId'] == '')
-            $errors['merId'] = 'Merchant Id is required.';
+        if ($params['merchantId'] == '')
+            $errors['merchantId'] = 'Merchant Id is required.';
 
         /* Validate amount field. */
         if ($params['amount'] == '') {
@@ -57,31 +57,109 @@ class SimulatorController extends Pub_Controller_Action
     public function bmlRedirectAction()
     {
         $params = $this->_request->getPost();
-        $params['purchaseAmount']   = $this->prepareAmount($params['amount']);
-        $params['purchaseCurrency'] = $this->prepareCurrency($params['currency']);
-        $params['merRespUrl'] =
-            'https://' . $_SERVER['SERVER_NAME'] .
-            $this->_request->getBaseUrl() . '/simulator/response';
-        $params['signature'] = $this->calculateSignature(
-            $params['password'],
-            $params['merId'],
-            '407387',
-            $params['orderId'],
-            $params['purchaseAmount'],
-            $params['purchaseCurrency']
+
+        /* Preset required parameters. */
+        $amount     = $this->prepareAmount($params['amount']);
+        $currency   = $this->prepareCurrency($params['currency']);
+        $merRespUrl = 'https://' . $_SERVER['SERVER_NAME'] .
+                      $this->_request->getBaseUrl() . '/simulator/response';
+
+        /* Calculate signature. */
+        $signature  = $this->calculateSignature(
+            $params['password'], $params['merchantId'], '407387',
+            $params['orderId'], $amount, $currency
+        );
+
+        /* Prepare request post parameters. */
+        $request = array(
+            'version'          => '1.0.0',
+            'merchantId'       => $params['merchantId'],
+            'acquirerId'       => '407387',
+            'purchaseAmount'   => $amount,
+            'purchaseCurrency' => $currency,
+            'purchaseCurrencyExponent' => 2,
+            'orderId'    => $params['orderId'],
+            'merRespUrl' => $merRespUrl,
+            'signature'  => $signature
         );
 
         /* Store request information in session for the current request. */
         $requestns = new Zend_Session_Namespace('request');
-        $requestns->vendor   = $params['vendor'];
-        $requestns->method   = $params['method'];
-        $requestns->merId    = $params['merId'];
-        $requestns->amount   = $params['amount'];
-        $requestns->currency = $params['currency'];
-        $requestns->orderId  = $params['orderId'];
-        $requestns->password = $params['password'];
+        $requestns->unsetAll();
+        foreach ($request as $key => $value) {
+            $requestns->__set($key, $value);
+        }
 
-        $this->view->params = $params;
+        /* Store initial post parameters to session. */
+        $postns = new Zend_Session_Namespace('requestOriginal');
+        $postns->unsetAll();
+        foreach ($params as $key => $value) {
+            $postns->__set($key, $value);
+        }
+
+        /* Set parameters to the view. */
+        $this->view->params = $request;
+    }
+
+    public function bmlDirectAction()
+    {
+        $params = $this->_request->getPost();
+
+        /* Preset required parameters. */
+        $amount     = $this->prepareAmount($params['amount']);
+        $currency   = $this->prepareCurrency($params['currency']);
+        $merRespUrl = 'https://' . $_SERVER['SERVER_NAME'] .
+                      $this->_request->getBaseUrl() . '/simulator/response';
+
+        /* Calculate signature. */
+        $signature  = $this->calculateSignature(
+            $params['password'], $params['merchantId'], '407387',
+            $params['orderId'], $amount, $currency
+        );
+        /* Prepare request params. */
+        $request = array(
+            'Version' => '1.0.0',
+            'MerID'   => $params['merchantId'],
+            'AcqID'   => '407387',
+            'PurchaseAmt' => $amount,
+            'PurchaseCurrency' => $currency,
+            'PurchaseCurrencyExponent' => 2,
+            'OrderID'     => $params['orderId'],
+            'Signature'   => $signature,
+            'CardNo'      => $params['cardNumber'],
+            'CardExpDate' => $params['cardExpiry'],
+            'CardCVV2'    => $params['cardCvv2']
+        );
+
+        /* Store request information in session for the current request. */
+        $requestns = new Zend_Session_Namespace('request');
+        $requestns->unsetAll();
+        foreach ($request as $key => $value) {
+            $requestns->__set($key, $value);
+        }
+
+        /* Store initial post parameters to session. */
+        $postns = new Zend_Session_Namespace('requestOriginal');
+        $postns->unsetAll();
+        foreach ($params as $key => $value) {
+            $postns->__set($key, $value);
+        }
+
+        /* Send request. */
+        $client = new Zend_Http_Client();
+        $client->setUri('https://testgateway.bankofmaldives.com.mv/SENTRY/PaymentGateway/Application/DirectAuthzLink.aspx');
+        $client->setMethod(Zend_Http_Client::POST);
+        $client->setParameterPost($request);
+
+        $response = $client->request();
+        $body = $response->getBody();
+        $responseParams = array();
+        parse_str(html_entity_decode($body), $responseParams);
+
+        $_POST = array();
+        $this->_request->setPost($responseParams);
+        $this->_forward('response');
+        return true;
     }
 
     public function responseAction()
@@ -89,11 +167,40 @@ class SimulatorController extends Pub_Controller_Action
         /* First, get the current post parameters. */
         $params = $this->_request->getPost();
 
+        /* Prepare filter for inflection. */
+        $filter = new Zend_Filter_Inflector(':param');
+        $filter->setRules(array(
+            ':param' => array('Word_CamelCaseToDash', 'StringToLower')
+        ));
+
         /* Get preceding request information from the session. */
         $requestns = new Zend_Session_Namespace('request');
+        $requestParamsArray = $requestns->getIterator()->getArrayCopy();
 
-        $this->view->initialParams = $requestns->getIterator()->getArrayCopy();
-        $this->view->responseParams = $params;
+        /* Inflect request params. */
+        $requestParams = array();
+        foreach ($requestParamsArray as $key => $value) {
+            $param = $filter->filter(array('param' => $key));
+            $param = str_replace('-', ' ', $param);
+            $param = ucwords($param);
+            $requestParams[$param] = $value;
+        }
+
+        /* Get preceding post request information from the session. */
+        $postns = new Zend_Session_Namespace('requestOriginal');
+
+        /* Inflect response params. */
+        $responseParams = array();
+        foreach ($params as $key => $value) {
+            $param = $filter->filter(array('param' => $key));
+            $param = str_replace('-', ' ', $param);
+            $param = ucwords($param);
+            $responseParams[$param] = $value;
+        }
+
+        $this->view->requestParams  = $requestParams;
+        $this->view->postParams     = $postns->getIterator()->getArrayCopy();
+        $this->view->responseParams = $responseParams;
     }
 
     private function prepareCurrency($mnemonic)
@@ -120,7 +227,7 @@ class SimulatorController extends Pub_Controller_Action
 
     private function calculateSignature($password, $merchantId, $acquirerId, $orderId, $amount, $currency)
     {
-        $hash = $password . $merchantId . $acquirerId . $amount . $currency;
+        $hash = $password . $merchantId . $acquirerId . $orderId . $amount . $currency;
         $hash = sha1($hash, true);
         return base64_encode($hash);
     }

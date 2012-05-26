@@ -1,14 +1,32 @@
 <!-- simulator/response -->
-<?php echo $this->partial('simulator/index.phtml', array('params' => $this->initialParams)) ?>
+<?php echo $this->partial('simulator/index.phtml', array('params' => $this->postParams)) ?>
 
 <div class="row">
-    <hr />
-    <h4>Transaction Response</h4><hr />
-    <div>
-        <table>
+
+    <div class="six columns">
+        <h4>Transaction Request</h4><hr />
+        <table width="100%">
             <thead>
                 <tr>
-                    <th>Field</th>
+                    <th width="170">Field</th>
+                    <th>Value</th>
+                </tr>
+            </thead>
+            <?php foreach ($this->requestParams as $key => $value): ?>
+            <tr>
+                <td><strong><?php echo $key ?></strong></td>
+                <td><?php echo $value ?></td>
+            </tr>
+            <?php endforeach; ?>
+        </table>
+    </div>
+
+    <div class="six columns">
+        <h4>Transaction Response</h4><hr />
+        <table width="100%">
+            <thead>
+                <tr>
+                    <th width="170">Field</th>
                     <th>Value</th>
                 </tr>
             </thead>

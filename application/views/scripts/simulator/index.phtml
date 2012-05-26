@@ -31,9 +31,9 @@
                 <?php echo isset($this->errors['password']) ? $this->partial('index/error.phtml', array('message' => $this->errors['password'])) : null ?>
             </label>
 
-            <label for="merId">Merchant Id
-                <input type="text" name="merId" id="merId" value="<?php echo isset($this->params['merId']) ? $this->params['merId'] : null ?>" class="input-text expand" />
-                <?php echo isset($this->errors['merId']) ? $this->partial('index/error.phtml', array('message' => $this->errors['merId'])) : null ?>
+            <label for="merchantId">Merchant Id
+                <input type="text" name="merchantId" id="merchantId" value="<?php echo isset($this->params['merchantId']) ? $this->params['merchantId'] : null ?>" class="input-text expand" />
+                <?php echo isset($this->errors['merchantId']) ? $this->partial('index/error.phtml', array('message' => $this->errors['merchantId'])) : null ?>
             </label>
 
             <label for="amount">Amount
@@ -57,15 +57,18 @@
         <div id="directOptions" class="four columns end">
             <h4>Direct Method Options</h4><hr />
             <label for="cardNumber">Card Number
-                <input type="text" name="cardNumber" id="cardNumber" maxlength="19" class="input-text expand" />
+                <input type="text" name="cardNumber" id="cardNumber" value="<?php echo isset($this->params['cardNumber']) ? $this->params['cardNumber'] : null ?>" maxlength="19" class="input-text expand" />
+                <?php echo isset($this->errors['cardNumber']) ? $this->partial('index/error.phtml', array('message' => $this->errors['cardNumber'])) : null ?>
             </label>
 
             <label for="cardExpiry">Card Expiry (MMYY)
-                <input type="text" name="cardExpiry" id="cardExpiry" maxlength="4" class="input-text expand" />
+                <input type="text" name="cardExpiry" id="cardExpiry" maxlength="4" value="<?php echo isset($this->params['cardExpiry']) ? $this->params['cardExpiry'] : null ?>" class="input-text expand" />
+                <?php echo isset($this->errors['cardExpiry']) ? $this->partial('index/error.phtml', array('message' => $this->errors['cardExpiry'])) : null ?>
             </label>
 
             <label for="cardCvv2">Card CVV2
-                <input type="text" name="cardCvv2" id="cardCvv2" maxlength="4" class="input-text expand" />
+                <input type="text" name="cardCvv2" id="cardCvv2" maxlength="4" value="<?php echo isset($this->params['cardCvv2']) ? $this->params['cardCvv2'] : null ?>" class="input-text expand" />
+                <?php echo isset($this->errors['cardCvv2']) ? $this->partial('index/error.phtml', array('message' => $this->errors['cardCvv2'])) : null ?>
             </label>
         </div>
 
