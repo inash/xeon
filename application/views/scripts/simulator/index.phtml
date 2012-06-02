@@ -54,32 +54,46 @@
             </label>
         </div>
 
-        <div id="directOptions" class="four columns end">
-            <h4>Direct Method Options</h4><hr />
-            <label for="cardNumber">Card Number
-                <input type="text" name="cardNumber" id="cardNumber" value="<?php echo isset($this->params['cardNumber']) ? $this->params['cardNumber'] : null ?>" maxlength="19" class="input-text expand" />
-                <?php echo isset($this->errors['cardNumber']) ? $this->partial('index/error.phtml', array('message' => $this->errors['cardNumber'])) : null ?>
-            </label>
+        <div id="options" class="four columns end">
+            <div id="xeonOptions" style="margin-bottom: 10px;">
+                <h4>Xeon Simulator Options</h4><hr />
 
-            <label for="cardExpiry">Card Expiry (MMYY)
-                <input type="text" name="cardExpiry" id="cardExpiry" maxlength="4" value="<?php echo isset($this->params['cardExpiry']) ? $this->params['cardExpiry'] : null ?>" class="input-text expand" />
-                <?php echo isset($this->errors['cardExpiry']) ? $this->partial('index/error.phtml', array('message' => $this->errors['cardExpiry'])) : null ?>
-            </label>
+                <hr />
+            </div>
 
-            <label for="cardCvv2">Card CVV2
-                <input type="text" name="cardCvv2" id="cardCvv2" maxlength="4" value="<?php echo isset($this->params['cardCvv2']) ? $this->params['cardCvv2'] : null ?>" class="input-text expand" />
-                <?php echo isset($this->errors['cardCvv2']) ? $this->partial('index/error.phtml', array('message' => $this->errors['cardCvv2'])) : null ?>
-            </label>
+            <div id="directOptions">
+                <h4>Direct Method Options</h4><hr />
+                <label for="cardNumber">Card Number
+                    <input type="text" name="cardNumber" id="cardNumber" value="<?php echo isset($this->params['cardNumber']) ? $this->params['cardNumber'] : null ?>" maxlength="19" class="input-text expand" />
+                    <?php echo isset($this->errors['cardNumber']) ? $this->partial('index/error.phtml', array('message' => $this->errors['cardNumber'])) : null ?>
+                </label>
+
+                <label for="cardExpiry">Card Expiry (MMYY)
+                    <input type="text" name="cardExpiry" id="cardExpiry" maxlength="4" value="<?php echo isset($this->params['cardExpiry']) ? $this->params['cardExpiry'] : null ?>" class="input-text expand" />
+                    <?php echo isset($this->errors['cardExpiry']) ? $this->partial('index/error.phtml', array('message' => $this->errors['cardExpiry'])) : null ?>
+                </label>
+
+                <label for="cardCvv2">Card CVV2
+                    <input type="text" name="cardCvv2" id="cardCvv2" maxlength="4" value="<?php echo isset($this->params['cardCvv2']) ? $this->params['cardCvv2'] : null ?>" class="input-text expand" />
+                    <?php echo isset($this->errors['cardCvv2']) ? $this->partial('index/error.phtml', array('message' => $this->errors['cardCvv2'])) : null ?>
+                </label>
+            </div>
         </div>
 
         <div class="four columns end">
             <h4>Some Instructions</h4><hr />
             <div>
-                Some instructions on the basic options and using the web
-                interface to validate transaction input.
+                <p>Some instructions on the basic options and using the web
+                interface to validate transaction input.</p>
+
+                <p>Some instructions on the basic options and using the web
+                interface to validate transaction input.</p>
+
+                <p>Some instructions on the basic options and using the web
+                interface to validate transaction input.</p>
             </div>
             <hr />
-            <input type="submit" name="action" value="Process" class="button small nice radius" />
+            <input type="submit" name="action" value="Process" class="button nice" />
         </div>
     </div>
 </form>
@@ -107,14 +121,72 @@ $(function() {
         return values;
     }
 
+    function toggleXeonOptions(display) {
+        if (display == 'show') {
+            $('#xeonOptions').slideDown('fast', toggleOptions);
+        } else {
+            $('#xeonOptions').slideUp('fast', toggleOptions);
+        }
+
+        if ($('#xeonOptions').css('display') == 'none'
+            && $('#directOptions').css('display') == 'none') {
+            $('#options').hide('fast');
+        } else {
+            $('#options').show('fast');
+        }
+    }
+
+    function toggleDirectOptions(display) {
+        if (display === 'show') {
+            $('#directOptions').slideDown('fast', toggleOptions);
+        } else {
+            $('#directOptions').slideUp('fast', toggleOptions);
+        }
+
+        if ($('#directOptions').css('display') == 'none'
+            && $('#xeonOptions').css('display') == 'none') {
+            $('#options').hide('fast');
+        } else {
+            $('#options').show('fast');
+        }
+    }
+
+    function toggleOptions() {
+        if ($('#xeonOptions').css('display') == 'none' &&
+            $('#directOptions').css('display') == 'none') {
+            $('#options').hide('fast');
+        } else {
+            $('#options').show('fast');
+        }
+    }
+
     $('#vendor').on('change', function(e) {
-        var params = getFormFields();
+        var xeonOptions = $('#xeonOptions');
         if (e.target.value === 'Xeon') {
             $('#fldPassword').hide('fast');
+            toggleXeonOptions('show');
         } else {
             $('#fldPassword').show('fast');
+            toggleXeonOptions('hide');
         }
     });
+
+    /* Change listener for method field. */
+    $('#method').on('change', function(e) {
+        var directOptions = $('#directOptions');
+        if (e.target.value == 'Redirect') {
+            toggleDirectOptions('hide');
+        } else if (e.target.value == 'Direct') {
+            toggleDirectOptions('show');
+        }
+    });
+
+    /* Initialize display of xeon options. */
+    if ($('#vendor')[0].value == 'BML') {
+        $('#xeonOptions').hide();
+    } else {
+        $('#xeonOptions').show();
+    }
 
     /* Initialize display of direct method options column. */
     if ($('#method')[0].value == 'Redirect') {
@@ -123,13 +195,11 @@ $(function() {
         $('#directOptions').show();
     }
 
-    /* Change listener for method field. */
-    $('#method').on('change', function(e) {
-        if (e.target.value == 'Redirect') {
-            $('#directOptions').hide('fast');
-        } else {
-            $('#directOptions').show('fast');
-        }
-    });
+    if ($('#xeonOptions').css('display') == 'none' &&
+        $('#directOptions').css('display') == 'none') {
+        $('#options').hide();
+    } else {
+        $('#options').show();
+    }
 });
 </script>

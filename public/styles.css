@@ -2,3 +2,16 @@ body {
     margin-top: 20px;
     margin-bottom: 20px;
 }
+
+input.input-text {
+    border-radius: 0px !important;
+    background-image: none !important;
+}
+div.dropdown a.current {
+    border-radius: 0px !important;
+    background-image: none !important;
+    border-color: #bbb !important;
+}
+div.dropdown a.selector {
+    border-color: #bbb !important;
+}
