@@ -15,3 +15,10 @@ div.dropdown a.current {
 div.dropdown a.selector {
     border-color: #bbb !important;
 }
+form.nice small.error {
+    border-radius: 0px;
+}
+
+div.alert-box.error {
+    border-radius: 0px;
+}
